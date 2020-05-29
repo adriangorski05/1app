@@ -10,12 +10,13 @@ pipeline {
         IMAGE = readMavenPom().getArtifactId()
         VERSION = readMavenPom().getVersion()
     }
+  
     stages {
         stage('Clear running apps') {
-            steps {
-                // Clear previous instances of app built
-                sh 'docker rm -f pandaapp || true'
-            }
+           steps {
+               // Clear previous instances of app built
+               sh 'docker rm -f pandaapp || true'
+           }
         }
         stage('Get Code') {
             steps {
@@ -31,12 +32,12 @@ pipeline {
         }
         stage('Build Docker image'){
             steps {
-               sh "mvn package -Pdocker"
+                sh "mvn package -Pdocker"
             }
         }
         stage('Run Docker app') {
             steps {
-               sh "docker run -d -p 0.0.0.0:8080:8080 --name pandaapp -t ${IMAGE}:${VERSION}"
+                sh "docker run -d -p 0.0.0.0:8080:8080 --name pandaapp -t ${IMAGE}:${VERSION}"
             }
         }
         stage('Test Selenium') {
@@ -44,10 +45,16 @@ pipeline {
                 sh "mvn test -Pselenium"
             }
         }
-        post {
-            always {
-                sh 'docker stop pandaapp'
-                deleteDir()
+        stage('Deploy jar to artifactory') {
+            steps {
+                configFileProvider([configFile(fileId: '9d1ed313-ea70-4fa9-9934-7108c53eca75', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
+                    sh "mvn -gs $MAVEN_GLOBAL_SETTINGS deploy -Dmaven.test.skip=true -e"
+                }
+            } 
+            post {
+                always { 
+                    sh 'docker stop pandaapp'
+                    deleteDir()
                 }
             }
         }
