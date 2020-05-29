@@ -11,7 +11,7 @@
     <!-- lookup parent from repository -->
   </parent>
   <groupId>pl.pandait</groupId>
-  <artifactId>panda</artifactId>
+  <artifactId>panda-applicaiton</artifactId>
   <version>2.0.0</version>
   <name>panda</name>
   <description>Demo project for Spring Boot</description>
